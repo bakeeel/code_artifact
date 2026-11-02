@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الحاسبة المالية التفاعلية</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        /* Custom smooth transition for theme change */
+        * {
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        /* Flowchart connector style */
+        .flow-line {
+            stroke-dasharray: 6;
+            animation: dash 30s linear infinite;
+        }
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen pb-12">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">الحاسبة المالية التفاعلية</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">تحليل التكاليف والأرباح بناءً على المخطط</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 space-x-reverse">
+                <!-- Toggle Config Modal -->
+                <button onclick="toggleConfigModal()" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-semibold flex items-center gap-2 transition">
+                    <i class="fa-solid fa-sliders text-emerald-600 dark:text-emerald-400"></i>
+                    <span class="hidden sm:inline">النسب الثابتة</span>
+                </button>
+
+                <!-- Dark Mode Toggle -->
+                <button id="themeToggle" onclick="toggleDarkMode()" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition" title="تبديل المظهر">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        
+        <!-- Top Controls Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            
+            <!-- Card 1: Purchase Price -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-emerald-500/50 transition">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-bold text-slate-500 dark:text-slate-400">المدخل الأول</span>
+                    <span class="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold">مبلغ الشراء</span>
+                </div>
+                <label for="purchasePrice" class="block text-sm font-semibold mb-1">مبلغ الشراء (التكلفة الأساسية)</label>
+                <div class="relative">
+                    <input type="number" id="purchasePrice" value="100" step="any" oninput="calculate()"
+                           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-lg font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none pr-10">
+                    <span class="absolute left-3 top-3.5 text-slate-400 text-sm font-bold">ر.س</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Invoice Value -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-emerald-500/50 transition">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-bold text-slate-500 dark:text-slate-400">المدخل الثاني</span>
+                    <span class="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold">قيمة الفاتورة</span>
+                </div>
+                <label for="invoiceValue" class="block text-sm font-semibold mb-1">قيمة الفاتورة</label>
+                <div class="relative">
+                    <input type="number" id="invoiceValue" value="115" step="any" oninput="calculate()"
+                           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-lg font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none pr-10">
+                    <span class="absolute left-3 top-3.5 text-slate-400 text-sm font-bold">ر.س</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Selling Price -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:border-emerald-500/50 transition">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-bold text-slate-500 dark:text-slate-400">المدخل الثالث</span>
+                    <span class="p-2 rounded-lg bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 text-xs font-bold">سعر البيع</span>
+                </div>
+                <label for="sellingPrice" class="block text-sm font-semibold mb-1">سعر البيع المستهدف</label>
+                <div class="relative">
+                    <input type="number" id="sellingPrice" value="130" step="any" oninput="calculate()"
+                           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-lg font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none pr-10">
+                    <span class="absolute left-3 top-3.5 text-slate-400 text-sm font-bold">ر.س</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Main Flow Diagram & Calculation Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-8">
+            
+            <!-- Left Side: Calculation Breakdown (Interactive Diagram Flow) -->
+            <div class="lg:col-span-8 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4 mb-6">
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-diagram-project text-emerald-500"></i>
+                            مخطط احتساب النسب والخصومات
+                        </h2>
+                        <span class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full font-medium">
+                            فرق البيع والفاتورة = <span id="diffValue" class="font-bold text-emerald-600 dark:text-emerald-400">15.00</span> ر.س
+                        </span>
+                    </div>
+
+                    <!-- Diagram Grid matching the drawing -->
+                    <div class="space-y-6">
+                        
+                        <!-- Row 1: Invoice Rate 4% -->
+                        <div class="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                            <div class="md:col-span-5">
+                                <div class="font-bold text-amber-900 dark:text-amber-300 text-sm">حساب نسبة الفاتورة (<span id="invoiceRateLabel">4</span>%)</div>
+                                <div class="text-xs text-amber-700/80 dark:text-amber-400/80 mt-1">تُحسب مباشرة من قيمة الفاتورة الكلية</div>
+                            </div>
+                            <div class="md:col-span-3 text-center">
+                                <span class="text-xs font-mono bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-900 text-slate-600 dark:text-slate-300 inline-block">
+                                    <span id="formula1">115 × 4%</span>
+                                </span>
+                            </div>
+                            <div class="md:col-span-4 text-left">
+                                <div class="text-xs text-slate-500 dark:text-slate-400">النتيجة:</div>
+                                <div id="resInvoiceTax" class="text-xl font-black text-amber-600 dark:text-amber-400">4.60 <span class="text-sm font-normal">ر.س</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Differencial 15% -->
+                        <div class="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-800/40 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                            <div class="md:col-span-5">
+                                <div class="font-bold text-purple-900 dark:text-purple-300 text-sm">حساب نسبة (<span id="diffRateLabel">15</span>%)</div>
+                                <div class="text-xs text-purple-700/80 dark:text-purple-400/80 mt-1">تُحسب على الفرق بين سعر البيع وقيمة الفاتورة</div>
+                            </div>
+                            <div class="md:col-span-3 text-center">
+                                <span class="text-xs font-mono bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-purple-200 dark:border-purple-900 text-slate-600 dark:text-slate-300 inline-block">
+                                    <span id="formula2">(130 - 115) × 15%</span>
+                                </span>
+                            </div>
+                            <div class="md:col-span-4 text-left">
+                                <div class="text-xs text-slate-500 dark:text-slate-400">النتيجة:</div>
+                                <div id="resDiffTax" class="text-xl font-black text-purple-600 dark:text-purple-400">2.25 <span class="text-sm font-normal">ر.س</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Operational Rate 5% -->
+                        <div class="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-800/40 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                            <div class="md:col-span-5">
+                                <div class="font-bold text-blue-900 dark:text-blue-300 text-sm">حساب النسبة التشغيلية (<span id="opsRateLabel">5</span>%)</div>
+                                <div class="text-xs text-blue-700/80 dark:text-blue-400/80 mt-1">تُحسب أيضاً على الفرق بين سعر البيع وقيمة الفاتورة</div>
+                            </div>
+                            <div class="md:col-span-3 text-center">
+                                <span class="text-xs font-mono bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-900 text-slate-600 dark:text-slate-300 inline-block">
+                                    <span id="formula3">(130 - 115) × 5%</span>
+                                </span>
+                            </div>
+                            <div class="md:col-span-4 text-left">
+                                <div class="text-xs text-slate-500 dark:text-slate-400">النتيجة:</div>
+                                <div id="resOpsTax" class="text-xl font-black text-blue-600 dark:text-blue-400">0.75 <span class="text-sm font-normal">ر.س</span></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Total Deductions Summary Banner -->
+                <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
+                    <div>مجموع الخصومات والنسب: <strong id="totalDeductions" class="text-slate-800 dark:text-slate-200 font-bold text-sm">7.60</strong> ر.س</div>
+                    <div class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                        <i class="fa-solid fa-circle-check"></i>
+                        تم التحديث وتطابق معادلة الرسم الهيكلي
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Final Profit Output Card -->
+            <div class="lg:col-span-4 bg-gradient-to-b from-slate-900 to-slate-800 text-white rounded-3xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden border border-slate-700">
+                
+                <!-- Background decorative glow -->
+                <div class="absolute -top-12 -left-12 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -right-12 w-40 h-40 bg-teal-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-6">
+                        <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-800/50 px-3 py-1 rounded-full">النتيجة النهائية</span>
+                        <i class="fa-solid fa-chart-line text-slate-400"></i>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-sm text-slate-400 block mb-1">الربح الصافي (الربح النهائي)</span>
+                            <div class="flex items-baseline gap-2">
+                                <span id="finalProfit" class="text-4xl lg:text-5xl font-black tracking-tight text-white">22.40</span>
+                                <span class="text-emerald-400 font-bold">ر.س</span>
+                            </div>
+                        </div>
+
+                        <!-- Profit Margin Percentage -->
+                        <div class="pt-2">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-400">هامش الربح التجاري</span>
+                                <span id="profitMargin" class="text-emerald-400 font-bold">17.23%</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                                <div id="profitBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: 17%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equation Breakdown list inside card -->
+                <div class="mt-8 pt-6 border-t border-slate-700/80 space-y-2 text-xs">
+                    <div class="flex justify-between text-slate-300">
+                        <span>سعر البيع النهائي:</span>
+                        <span id="summarySelling" class="font-bold">130.00 ر.س</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>(-) مبلغ الشراء الأصلي:</span>
+                        <span id="summaryPurchase" class="font-bold">- 100.00 ر.س</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>(-) إجمالي الخصومات والنسب:</span>
+                        <span id="summaryDeductions" class="font-bold text-amber-400">- 7.60 ر.س</span>
+                    </div>
+                    <div class="pt-2 flex justify-between text-emerald-400 font-bold text-sm border-t border-slate-700/50">
+                        <span>الربح المتبقي:</span>
+                        <span id="summaryFinal">22.40 ر.س</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Comparative Examples / Quick Presets -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 mb-8">
+            <h3 class="text-md font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-amber-500"></i>
+                نماذج تجربة سريعة (بناءً على الصورة)
+            </h3>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="setPreset(100, 115, 130)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-xl text-sm font-semibold transition flex items-center gap-2">
+                    <span>النموذج 1: سعر بيع 130 (الربح: 22.40)</span>
+                </button>
+                <button onclick="setPreset(100, 115, 120)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-xl text-sm font-semibold transition flex items-center gap-2">
+                    <span>النموذج 2: سعر بيع 120 (الربح: 14.40)</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal for Hidden / Custom Rates Config -->
+    <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 transform transition-all">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-emerald-500"></i>
+                    تعديل النسب الثابتة (المخفية)
+                </h3>
+                <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">
+                النسب الافتراضية محددة وفق المخطط، يمكنك تغييرها لاختبار حسابات مختلفة.
+            </p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">نسبة الفاتورة (%)</label>
+                    <input type="number" id="invoiceRate" value="4" step="any" oninput="calculate()"
+                           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm font-bold">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">نسبة الفرق 15% (%)</label>
+                    <input type="number" id="diffRate" value="15" step="any" oninput="calculate()"
+                           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm font-bold">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">النسبة التشغيلية (%)</label>
+                    <input type="number" id="opsRate" value="5" step="any" oninput="calculate()"
+                           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm font-bold">
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="resetRates()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-200 transition">
+                    استعادة الافتراضي
+                </button>
+                <button onclick="toggleConfigModal()" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition">
+                    حفظ وإغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic Script -->
+    <script>
+        // Number Formatter helper
+        const fmt = (num) => {
+            return new Intl.NumberFormat('ar-SA', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+        };
+
+        const fmtEN = (num) => parseFloat(num).toFixed(2);
+
+        // Core Calculation Function
+        function calculate() {
+            // Inputs
+            const purchasePrice = parseFloat(document.getElementById('purchasePrice').value) || 0;
+            const invoiceValue  = parseFloat(document.getElementById('invoiceValue').value) || 0;
+            const sellingPrice  = parseFloat(document.getElementById('sellingPrice').value) || 0;
+
+            // Rates
+            const invoiceRate = parseFloat(document.getElementById('invoiceRate').value) || 0;
+            const diffRate    = parseFloat(document.getElementById('diffRate').value) || 0;
+            const opsRate     = parseFloat(document.getElementById('opsRate').value) || 0;
+
+            // Difference between Selling Price & Invoice Value
+            const diff = sellingPrice - invoiceValue;
+
+            // Calculations based on the Diagram logic:
+            // 1. Invoice Rate % of Invoice Value
+            const invoiceTax = (invoiceValue * (invoiceRate / 100));
+
+            // 2. Diff Rate % of (Selling Price - Invoice Value)
+            const diffTax = (diff * (diffRate / 100));
+
+            // 3. Operational Rate % of (Selling Price - Invoice Value)
+            const opsTax = (diff * (opsRate / 100));
+
+            // Total Deductions
+            const totalDeductions = invoiceTax + diffTax + opsTax;
+
+            // Final Profit Calculation: (Selling Price - Purchase Price) - Total Deductions
+            const grossProfit = sellingPrice - purchasePrice;
+            const netProfit = grossProfit - totalDeductions;
+
+            // Profit Margin Percentage
+            const margin = sellingPrice > 0 ? (netProfit / sellingPrice) * 100 : 0;
+
+            // Update Labels
+            document.getElementById('invoiceRateLabel').innerText = invoiceRate;
+            document.getElementById('diffRateLabel').innerText = diffRate;
+            document.getElementById('opsRateLabel').innerText = opsRate;
+
+            document.getElementById('diffValue').innerText = fmtEN(diff);
+
+            // Update Formulas Display
+            document.getElementById('formula1').innerText = `${invoiceValue} × ${invoiceRate}%`;
+            document.getElementById('formula2').innerText = `(${sellingPrice} - ${invoiceValue}) × ${diffRate}%`;
+            document.getElementById('formula3').innerText = `(${sellingPrice} - ${invoiceValue}) × ${opsRate}%`;
+
+            // Update Results UI
+            document.getElementById('resInvoiceTax').innerHTML = `${fmtEN(invoiceTax)} <span class="text-sm font-normal">ر.س</span>`;
+            document.getElementById('resDiffTax').innerHTML = `${fmtEN(diffTax)} <span class="text-sm font-normal">ر.س</span>`;
+            document.getElementById('resOpsTax').innerHTML = `${fmtEN(opsTax)} <span class="text-sm font-normal">ر.س</span>`;
+
+            document.getElementById('totalDeductions').innerText = fmtEN(totalDeductions);
+            document.getElementById('finalProfit').innerText = fmtEN(netProfit);
+            document.getElementById('profitMargin').innerText = `${margin.toFixed(2)}%`;
+            document.getElementById('profitBar').style.width = `${Math.min(Math.max(margin, 0), 100)}%`;
+
+            // Summary List UI
+            document.getElementById('summarySelling').innerText = `${fmtEN(sellingPrice)} ر.س`;
+            document.getElementById('summaryPurchase').innerText = `- ${fmtEN(purchasePrice)} ر.س`;
+            document.getElementById('summaryDeductions').innerText = `- ${fmtEN(totalDeductions)} ر.س`;
+            document.getElementById('summaryFinal').innerText = `${fmtEN(netProfit)} ر.س`;
+        }
+
+        // Quick Preset Setter
+        function setPreset(purchase, invoice, selling) {
+            document.getElementById('purchasePrice').value = purchase;
+            document.getElementById('invoiceValue').value = invoice;
+            document.getElementById('sellingPrice').value = selling;
+            calculate();
+        }
+
+        // Config Modal Toggle
+        function toggleConfigModal() {
+            const modal = document.getElementById('configModal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        // Reset Rates to Default
+        function resetRates() {
+            document.getElementById('invoiceRate').value = 4;
+            document.getElementById('diffRate').value = 15;
+            document.getElementById('opsRate').value = 5;
+            calculate();
+        }
+
+        // Dark Mode Logic
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.className = 'fa-solid fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialization
+        window.onload = function() {
+            // Apply saved dark mode preference
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+            }
+            
+            // Run initial calculation
+            calculate();
+        };
+    </script>
+</body>
+</html>
